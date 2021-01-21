@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  mysql:
+    image: mysql:5.7.26
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./database/mysql:/var/lib/mysql # a primeira é a pasta local : a segunda é a pasta no docker
+
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+        POSTGRES_PASSWORD: root
+    volumes:
+        - ./database/postgres:/var/lib/postgresql/data # a primeira é a pasta local : a segunda é a pasta no docker
+
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    links:
+      - postgres
