@@ -1,0 +1,32 @@
+{
+  "name": "backend-postgres-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js",
+    "clean_db": "docker exec -i backend-postgres-node_postgres_1 psql -U postgres -c \"DROP DATABASE IF EXISTS db\"",
+    "create_db": "cat ./db.sql | docker exec -i backend-postgres-node_postgres_1 psql -U postgres",
+    "psql": "docker exec -ti backend-postgres-node_postgres_1 psql -U postgres 'db'",
+    "docker-start": "docker-compose up -d postgres adminer",
+    "docker-stop": "docker-compose down"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aspectum/backend-postgres-node.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aspectum/backend-postgres-node/issues"
+  },
+  "homepage": "https://github.com/aspectum/backend-postgres-node#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
