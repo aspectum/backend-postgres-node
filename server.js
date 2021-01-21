@@ -1,10 +1,16 @@
 const express = require('express')
 const knex = require('knex')
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const port = 3000;
 const secret_key = 'canIPutAnythingHere';
+const saltRounds = 10;
+const correctPassword = 'pass123';
+const hash = bcrypt.hashSync(correctPassword, saltRounds);
+
+app.use(express.json());
 
 const db = knex({
     client: 'pg',
@@ -32,6 +38,30 @@ app.get('/', verifyToken, (req, res) => {
 })
 
 app.post('/login', (req, res) => {
+    const test_user = {
+        id:1,
+        username: 'test',
+    }
+
+    bcrypt.compare(req.body.password, hash)
+        .then(function(result) {
+            if (result === true) {
+                jwt.sign({ test_user }, secret_key, (err, token) => { // check if err?
+                    res.json({ token })
+                });
+            }
+            else {
+                res.sendStatus(403)
+            }
+        })
+        .catch(err => {
+            console.log('ERROR ', err.message)
+            res.sendStatus(400)
+        })
+
+})
+
+app.post('/logout', (req, res) => {
     const test_user = {
         id:1,
         username: 'test',
