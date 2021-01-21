@@ -7,7 +7,7 @@ CREATE TABLE usuarios(
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    empresa_id INT NOT NULL DEFAULT 0,
+    empresa_id INT,
     usuario_id INT,
     PRIMARY KEY(id)
 );
