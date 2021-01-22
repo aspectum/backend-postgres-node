@@ -24,6 +24,34 @@ const validateRequest = (type) => (req, res, next) => {
     }
 }
 
+
+// Middleware to validate if logged_user owns requested empresa
+const validateOwner = (db) => (req, res, next) => {
+    const { id } = req.params;
+    const logged_user_id = req.authData.id;
+
+    db.select('usuario_id').from('empresas').where('id', '=', id)
+        .then(data => {
+
+            if (!data[0]) throw { msg:`ERROR: Empresa doesn't exist`, code: 404 };
+            if (data[0].usuario_id !== logged_user_id) throw { msg:`ERROR: Unauthorized user ${logged_user_id}`, code: 403 };
+
+            next();
+        })
+        .catch(err => {
+            console.log(err);
+
+            let code = err.code;
+            if (!code) code = 400;
+
+            return res.status(code).send({
+                success: false,
+                data: null
+            });
+        });
+}
+
+
 // Lists all empresas from logged user
 const list = (db) => (req, res) => {
     const usuario_id = req.authData.id;
@@ -88,40 +116,23 @@ const update = (db) => (req, res) => {
         email && {email}
     );
 
-    // Using transaction because update won't be commited if
-    // logged user is trying to change someone else's empresa
-    // Also might be better to 400 everything to not give info if empresa/:id exists
-    db.transaction(trx => {
-        trx.from('empresas').where('id', '=', id).update(updated_values, '*')
-            .then(data => {
-                empresa = data[0];
+    db.from('empresas').where('id', '=', id).update(updated_values, '*')
+        .then(data => {
+            empresa = data[0];
 
-                if (!empresa) throw { msg:`ERROR: Empresa doesn't exist`, code: 404 }
-                if (empresa.usuario_id !== logged_user_id) throw { msg:`ERROR: Unauthorized user ${logged_user_id}`, code: 403 }
-
-                console.log('UPDATED ', empresa);
-                return res.status(200).send({
-                    success: true,
-                    data: empresa
-                });
-            })
-            .then(trx.commit)
-            .catch(err => {
-                trx.rollback(err);
-
-                console.log(err);
-
-                let code = err.code;
-                if (!code) code = 400;
-
-                return res.status(code).send({
-                    success: false,
-                    data: null
-                });
+            console.log('UPDATED ', empresa);
+            return res.status(200).send({
+                success: true,
+                data: empresa
             });
         })
         .catch(err => {
-            console.log(err) // Doubling logs, but I don't know if I might miss something if I delete this
+            console.log(err);
+
+            return res.status(400).send({
+                success: false,
+                data: null
+            });
         });
 }
 
@@ -131,45 +142,30 @@ const remove = (db) => (req, res) => {
     const { id } = req.params;
     const logged_user_id = req.authData.id;
 
-    // Using transaction for the same reason as in update() - read comment there
-    // Might be better to just create a new middleware to do these checks
-    db.transaction(trx => {
-        trx.from('empresas').where('id', '=', id).del('*')
-            .then(data => {
-                empresa = data[0];
+    db.from('empresas').where('id', '=', id).del('*')
+        .then(data => {
+            empresa = data[0];
 
-                if (!empresa) throw { msg:`ERROR: Empresa doesn't exist`, code: 404 }
-                if (empresa.usuario_id !== logged_user_id) throw { msg:`ERROR: Unauthorized user ${logged_user_id}`, code: 403 }
-
-                console.log('DELETED ', empresa);
-                return res.status(200).send({
-                    success: true,
-                    data: empresa
-                });
-            })
-            .then(trx.commit)
-            .catch(err => {
-                trx.rollback(err);
-
-                console.log(err);
-
-                let code = err.code;
-                if (!code) code = 400;
-
-                return res.status(code).send({
-                    success: false,
-                    data: null
-                });
+            console.log('DELETED ', empresa);
+            return res.status(200).send({
+                success: true,
+                data: empresa
             });
         })
         .catch(err => {
-            console.log(err) // Doubling logs, but I don't know if I might miss something if I delete this
+            console.log(err);
+
+            return res.status(code).send({
+                success: false,
+                data: null
+            });
         });
 }
 
 
 module.exports = {
     validateRequest,
+    validateOwner,
     list,
     create,
     update,
