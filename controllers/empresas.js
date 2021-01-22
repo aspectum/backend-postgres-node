@@ -153,7 +153,7 @@ const remove = (db) => (req, res) => {
         .catch(err => {
             console.log(err);
 
-            return res.status(code).send({
+            return res.status(400).send({
                 success: false,
                 data: null
             });
