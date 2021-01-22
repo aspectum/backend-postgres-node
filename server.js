@@ -1,12 +1,10 @@
 const express = require('express')
 const knex = require('knex')
-const jwt = require('jsonwebtoken');
 
 const accessControl =  require('./controllers/accessControl');
 
 const app = express();
 const port = 3000;
-const secret_key = 'canIPutAnythingHere';
 
 app.use(express.json());
 
@@ -23,6 +21,7 @@ const db = knex({
 // ENDPOINTS
 
 app.post('/registro', accessControl.register(db))
+app.post('/login', accessControl.login(db))
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);
