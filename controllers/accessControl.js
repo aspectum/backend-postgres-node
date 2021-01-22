@@ -4,27 +4,31 @@ const jwt = require('jsonwebtoken');
 const saltRounds = 10;
 const secret_key = 'canIPutAnythingHere'; // ????
 
-// Validates request
-const isRequestValid = (body, type) => {
-    if (!body.email) return false;
-    if (!body.password) return false;
-    if (type === 'register') if (!body.nome) return false; // This way to prevent trying to access body.nome when it doesn't exist
+// Middleware to validate request
+const validateRequest = (type) => (req, res, next) => {
+    let isValid = true;
+
+    if (!req.body.email) isValid = false;
+    if (!req.body.password) isValid = false;
+    if (type === 'register') if (!req.body.nome) isValid = false; // This way to prevent trying to access body.nome when it doesn't exist
     // Validate email
 
-    return true;
-}
-
-// Handles registration
-// DB will throw error if email is not unique
-// so no need to check that previously
-const register = (db) => (req, res) => {
-    if (!isRequestValid(req.body, 'register')) {
+    if (isValid) {
+        next()
+    }
+    else {
         console.log('ERROR: body incomplete')
         return res.status(400).send({
             success: false,
             data: null
         });
     }
+}
+
+// Handles registration
+// DB will throw error if email is not unique
+// so no need to check that previously
+const register = (db) => (req, res) => {
 
     const { nome, email, password } = req.body;
 
@@ -67,13 +71,6 @@ const authenticate = (id) => {
 
 // Handles login
 const login = (db) => (req, res) => {
-    if (!isRequestValid(req.body, 'login')) {
-        console.log('ERROR: body incomplete')
-        return res.status(400).send({
-            success: false,
-            data: null
-        });
-    }
 
     const { email, password } = req.body;
 
@@ -126,6 +123,7 @@ const login = (db) => (req, res) => {
 }
 
 module.exports = {
+    validateRequest,
     register,
     login
 }

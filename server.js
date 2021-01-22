@@ -20,8 +20,8 @@ const db = knex({
 
 // ENDPOINTS
 
-app.post('/registro', accessControl.register(db))
-app.post('/login', accessControl.login(db))
+app.post('/registro', accessControl.validateRequest('register'), accessControl.register(db))
+app.post('/login', accessControl.validateRequest('login'), accessControl.login(db))
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);
