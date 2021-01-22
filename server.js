@@ -28,8 +28,8 @@ app.post('/logout', accessControl.validateAuth, accessControl.logout(db));
 // Empresas
 app.get('/empresas', accessControl.validateAuth, empresas.list(db));
 app.post('/empresas', accessControl.validateAuth, empresas.validateRequest('create'), empresas.create(db));
-app.put('/empresas/:id', accessControl.validateAuth, empresas.validateRequest('update'), empresas.validateOwner(db), empresas.update(db)); // Not sure how to validate this
-app.delete('/empresas/:id', accessControl.validateAuth, empresas.validateOwner(db), empresas.remove(db));
+app.put('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateRequest('update'), empresas.validateOwner(db), empresas.update(db)); // Not sure how to validate this
+app.delete('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), empresas.remove(db));
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);

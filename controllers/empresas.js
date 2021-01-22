@@ -27,10 +27,10 @@ const validateRequest = (type) => (req, res, next) => {
 
 // Middleware to validate if logged_user owns requested empresa
 const validateOwner = (db) => (req, res, next) => {
-    const { id } = req.params;
+    const { empresa_id } = req.params;
     const logged_user_id = req.authData.id;
 
-    db.select('usuario_id').from('empresas').where('id', '=', id)
+    db.select('usuario_id').from('empresas').where('id', '=', empresa_id)
         .then(data => {
 
             if (!data[0]) throw { msg:`ERROR: Empresa doesn't exist`, code: 404 };
@@ -106,9 +106,8 @@ const create = (db) => (req, res) => {
 
 // Edits empresa
 const update = (db) => (req, res) => {
-    const { id } = req.params;
+    const { empresa_id } = req.params;
     const { slug, razao_social, email } = req.body;
-    const logged_user_id = req.authData.id;
 
     const updated_values = Object.assign({},    // This should filter the properties that are undefined (not on request body)
         slug && {slug},
@@ -116,7 +115,7 @@ const update = (db) => (req, res) => {
         email && {email}
     );
 
-    db.from('empresas').where('id', '=', id).update(updated_values, '*')
+    db.from('empresas').where('id', '=', empresa_id).update(updated_values, '*')
         .then(data => {
             empresa = data[0];
 
@@ -139,10 +138,9 @@ const update = (db) => (req, res) => {
 
 // Deletes empresa
 const remove = (db) => (req, res) => {
-    const { id } = req.params;
-    const logged_user_id = req.authData.id;
+    const { empresa_id } = req.params;
 
-    db.from('empresas').where('id', '=', id).del('*')
+    db.from('empresas').where('id', '=', empresa_id).del('*')
         .then(data => {
             empresa = data[0];
 
