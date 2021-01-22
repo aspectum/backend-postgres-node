@@ -29,6 +29,7 @@ app.post('/logout', accessControl.validateAuth, accessControl.logout(db));
 app.get('/empresas', accessControl.validateAuth, empresas.list(db));
 app.post('/empresas', accessControl.validateAuth, empresas.validateRequest('create'), empresas.create(db));
 app.put('/empresas/:id', accessControl.validateAuth, empresas.validateRequest('update'), empresas.update(db)); // Not sure how to validate this
+app.delete('/empresas/:id', accessControl.validateAuth, empresas.remove(db)); // Not sure how to validate this
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);

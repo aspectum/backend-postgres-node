@@ -125,9 +125,53 @@ const update = (db) => (req, res) => {
         });
 }
 
+
+// Deletes empresa
+const remove = (db) => (req, res) => {
+    const { id } = req.params;
+    const logged_user_id = req.authData.id;
+
+    // Using transaction for the same reason as in update() - read comment there
+    // Might be better to just create a new middleware to do these checks
+    db.transaction(trx => {
+        trx.from('empresas').where('id', '=', id).del('*')
+            .then(data => {
+                empresa = data[0];
+
+                if (!empresa) throw { msg:`ERROR: Empresa doesn't exist`, code: 404 }
+                if (empresa.usuario_id !== logged_user_id) throw { msg:`ERROR: Unauthorized user ${logged_user_id}`, code: 403 }
+
+                console.log('DELETED ', empresa);
+                return res.status(200).send({
+                    success: true,
+                    data: empresa
+                });
+            })
+            .then(trx.commit)
+            .catch(err => {
+                trx.rollback(err);
+
+                console.log(err);
+
+                let code = err.code;
+                if (!code) code = 400;
+
+                return res.status(code).send({
+                    success: false,
+                    data: null
+                });
+            });
+        })
+        .catch(err => {
+            console.log(err) // Doubling logs, but I don't know if I might miss something if I delete this
+        });
+}
+
+
 module.exports = {
     validateRequest,
     list,
     create,
-    update
+    update,
+    remove
 }
