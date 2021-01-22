@@ -25,6 +25,37 @@ const validateRequest = (type) => (req, res, next) => {
     }
 }
 
+// Middleware to validate authentication token
+// If I implement blacklisting, I'll check that here
+const validateAuth = (req, res, next) => {
+    const { authorization } = req.headers;
+
+    if (!authorization) {
+        console.log('ERROR: no authorization header')
+        return res.status(401).send({
+            success: false,
+            data: null
+        });
+    }
+
+    const token = authorization.split(' ')[1];
+
+    jwt.verify(token, secret_key, (err, data) => {
+        if (err) {
+            console.log(err)
+            return res.status(403).send({
+                success: false,
+                data: null
+            });
+        }
+        req.authData = {
+            token,
+            id: data.id
+        };
+        next();
+    });
+}
+
 // Handles registration
 // DB will throw error if email is not unique
 // so no need to check that previously
@@ -80,7 +111,6 @@ const login = (db) => (req, res) => {
 
             if (isValid) {
                 token = authenticate(data[0].id);
-                console.log('TOKEN ', data[0].id, token)
 
                 db.insert({
                     token,
@@ -122,8 +152,32 @@ const login = (db) => (req, res) => {
 
 }
 
+
+// Handles logout
+const logout = (db) => (req, res) => {
+    const { token  } = req.authData;
+
+    db.from('tokens').where('token', '=', token).del()
+        .then(data => {
+            console.log(data);
+            res.status(200).send({
+                success: true,
+                data: null,
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(400).send({
+                success: false,
+                data: null,
+            });
+        })
+}
+
 module.exports = {
     validateRequest,
+    validateAuth,
     register,
-    login
+    login,
+    logout
 }

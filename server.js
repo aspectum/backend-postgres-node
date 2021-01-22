@@ -22,6 +22,7 @@ const db = knex({
 
 app.post('/registro', accessControl.validateRequest('register'), accessControl.register(db))
 app.post('/login', accessControl.validateRequest('login'), accessControl.login(db))
+app.post('/logout', accessControl.validateAuth, accessControl.logout(db))
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);
