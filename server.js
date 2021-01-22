@@ -27,6 +27,7 @@ app.post('/logout', accessControl.validateAuth, accessControl.logout(db));
 
 // Empresas
 app.get('/empresas', accessControl.validateAuth, empresas.list(db));
+app.post('/empresas', accessControl.validateAuth, empresas.validateRequest('create'), empresas.create(db));
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);
