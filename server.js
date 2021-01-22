@@ -36,6 +36,7 @@ app.delete('/empresas/:empresa_id', accessControl.validateAuth, empresas.validat
 app.get('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.list(db));
 app.post('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.validateRequest('create'), sedes.create(db));
 app.put('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.validateRequest('update'), sedes.update(db));
+app.delete('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.remove(db));
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);

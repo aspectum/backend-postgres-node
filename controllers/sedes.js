@@ -108,9 +108,37 @@ const update = (db) => (req, res) => {
         });
 }
 
+
+// Deletes sede
+const remove = (db) => (req, res) => {
+    const { empresa_id, sede_id } = req.params;
+
+    db.from('sedes').where({ id: sede_id, empresa_id }).del('*')
+        .then(data => {
+            sede = data[0];
+
+            if (!sede) throw { msg:`ERROR: Sede doesn't exist or does not belong to this Empresa`, code: 400 };
+
+            console.log('DELETED ', sede);
+            return res.status(200).send({
+                success: true,
+                data: sede
+            });
+        })
+        .catch(err => {
+            console.log(err);
+
+            return res.status(400).send({
+                success: false,
+                data: null
+            });
+        });
+}
+
 module.exports = {
     validateRequest,
     list,
     create,
     update,
+    remove
 }
