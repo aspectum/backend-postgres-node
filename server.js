@@ -3,6 +3,7 @@ const knex = require('knex')
 
 const accessControl =  require('./controllers/accessControl');
 const empresas =  require('./controllers/empresas');
+const sedes =  require('./controllers/sedes');
 
 const app = express();
 const port = 3000;
@@ -30,6 +31,9 @@ app.get('/empresas', accessControl.validateAuth, empresas.list(db));
 app.post('/empresas', accessControl.validateAuth, empresas.validateRequest('create'), empresas.create(db));
 app.put('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateRequest('update'), empresas.validateOwner(db), empresas.update(db)); // Not sure how to validate this
 app.delete('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), empresas.remove(db));
+
+// Sedes
+app.get('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.list(db));
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);
