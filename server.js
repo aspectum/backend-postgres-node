@@ -34,6 +34,7 @@ app.delete('/empresas/:empresa_id', accessControl.validateAuth, empresas.validat
 
 // Sedes
 app.get('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.list(db));
+app.post('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.validateRequest('create'), sedes.create(db));
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);
