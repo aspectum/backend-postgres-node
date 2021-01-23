@@ -25,7 +25,6 @@ const validateRequest = (type) => (req, res, next) => {
 // Lists all sedes from empresa
 const list = (db) => (req, res) => {
     const { empresa_id } = req.params;
-    const usuario_id = req.authData.id;
 
     db.select('*').from('sedes').where({ empresa_id })
         .then(data => {
