@@ -3,10 +3,10 @@ const { validateEmail } =  require('../helpers/validateEmail');
 // Middleware to validate request
 const validateRequest = (req, res, next) => {
     let isValid = true;
-
+    
+    isValid = validateEmail(req.body.email); // undefined returns false. THIS MUST HAPPEN FIRST!! or something like isValid = validate(email) && isValid
     if (!req.body.slug) isValid = false;
     if (!req.body.razao_social) isValid = false;
-    isValid = validateEmail(req.body.email); // undefined returns false
     // Validate cnpj ???
 
     if (isValid) {
