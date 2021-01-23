@@ -36,7 +36,7 @@ const list = (db) => (req, res) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(200).send({
+            res.status(400).send({
                 success: false,
                 data: null,
             });
