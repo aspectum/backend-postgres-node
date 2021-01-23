@@ -70,17 +70,13 @@ const register = (db) => (req, res) => {
         email: email,
         password: hash
     })
-        .into('usuarios').returning('*')
+        .into('usuarios').returning('id', 'nome', 'email')
         .then(data => {
             user = data[0];
             console.log(user);
             res.status(200).send({
                 success: true,
-                data: {
-                    id: user.id,
-                    nome: user.nome,
-                    email: user.email
-                }
+                data: user
             });
         })
         .catch(err => {
