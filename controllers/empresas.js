@@ -1,15 +1,12 @@
+const { validateEmail } =  require('../helpers/validateEmail');
+
 // Middleware to validate request
-// How to validate PUT?
-const validateRequest = (type) => (req, res, next) => {
+const validateRequest = (req, res, next) => {
     let isValid = true;
 
-    // might have to rearrange these
-    if (type === 'create') {
-        if (!req.body.slug) isValid = false;
-        if (!req.body.razao_social) isValid = false;
-        if (!req.body.email) isValid = false;
-    }
-    // Validate email
+    if (!req.body.slug) isValid = false;
+    if (!req.body.razao_social) isValid = false;
+    isValid = validateEmail(req.body.email); // undefined returns false
     // Validate cnpj ???
 
     if (isValid) {

@@ -29,8 +29,8 @@ app.post('/logout', accessControl.validateAuth, accessControl.logout(db));
 
 // Empresas
 app.get('/empresas', accessControl.validateAuth, empresas.list(db));
-app.post('/empresas', accessControl.validateAuth, empresas.validateRequest('create'), empresas.create(db));
-app.put('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), empresas.validateRequest('update'), empresas.update(db)); // Not sure how to validate this
+app.post('/empresas', accessControl.validateAuth, empresas.validateRequest, empresas.create(db));
+app.put('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), empresas.validateRequest, empresas.update(db));
 app.delete('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), empresas.remove(db));
 
 // Sedes
