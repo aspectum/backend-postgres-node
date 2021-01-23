@@ -4,6 +4,7 @@ const knex = require('knex')
 const accessControl =  require('./controllers/accessControl');
 const empresas =  require('./controllers/empresas');
 const sedes =  require('./controllers/sedes');
+const usuarios =  require('./controllers/usuarios');
 
 const app = express();
 const port = 3000;
@@ -37,6 +38,11 @@ app.get('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner
 app.post('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.validateRequest('create'), sedes.create(db));
 app.put('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.validateRequest('update'), sedes.update(db));
 app.delete('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner(db), sedes.remove(db));
+
+// Usuarios
+app.get('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), usuarios.list(db));
+app.post('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner(db), accessControl.validateRequest('register'), usuarios.create(db)); // Using accessControl.validateRequest (?)
+
 
 app.listen(port, () => {
     console.log(`running on port ${port}`);
