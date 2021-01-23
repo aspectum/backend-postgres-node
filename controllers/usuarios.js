@@ -1,12 +1,13 @@
 const bcrypt = require('bcrypt'); // importing this in 2 controllers
 
 const saltRounds = 10;
+const allMinusPassword = ['id', 'nome', 'email', 'empresa_id', 'usuario_id'];
 
 // Lists all usuarios from empresa (not listing owner)
 const list = (db) => (req, res) => {
     const { empresa_id } = req.params;
 
-    db.select('id', 'nome', 'email', 'empresa_id', 'usuario_id').from('usuarios').where({ empresa_id })
+    db.select(allMinusPassword).from('usuarios').where({ empresa_id })
         .then(data => {
             console.log(data);
             res.status(200).send({
@@ -42,7 +43,7 @@ const create = (db) => (req, res) => {
         empresa_id,
         usuario_id
     })
-        .into('usuarios').returning(['id', 'nome', 'email', 'empresa_id', 'usuario_id'])
+        .into('usuarios').returning(allMinusPassword)
         .then(data => {
             usuario = data[0];
             console.log(usuario);
@@ -75,7 +76,7 @@ const update = (db) => (req, res) => {
         hash && {password: hash},
     );
 
-    db.from('usuarios').where({ id: usuario_id, empresa_id }).update(updated_values, ['id', 'nome', 'email', 'empresa_id', 'usuario_id'])
+    db.from('usuarios').where({ id: usuario_id, empresa_id }).update(updated_values, allMinusPassword)
         .then(data => {
             usuario = data[0];
 
@@ -97,8 +98,35 @@ const update = (db) => (req, res) => {
         });
 }
 
+// Deletes usuario
+const remove = (db) => (req, res) => {
+    const { empresa_id, usuario_id } = req.params;
+
+    db.from('usuarios').where({ id: usuario_id, empresa_id }).del(allMinusPassword)
+        .then(data => {
+            usuario = data[0];
+
+            if (!usuario) throw { msg:`ERROR: Usuario doesn't exist or does not belong to this Empresa`, code: 400 };
+
+            console.log('DELETED ', usuario);
+            return res.status(200).send({
+                success: true,
+                data: usuario
+            });
+        })
+        .catch(err => {
+            console.log(err);
+
+            return res.status(400).send({
+                success: false,
+                data: null
+            });
+        });
+}
+
 module.exports = {
     list,
     create,
     update,
+    remove
 }
