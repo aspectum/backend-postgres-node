@@ -1,14 +1,11 @@
+const { validateCNPJ } =  require('../helpers/validateCNPJ');
+
 // Middleware to validate request
-// How to validate PUT?
-const validateRequest = (type) => (req, res, next) => {
+const validateRequest = (req, res, next) => {
     let isValid = true;
 
-    // might have to rearrange these
-    if (type === 'create') {
-        if (!req.body.endereco) isValid = false;
-        if (!req.body.cnpj) isValid = false;
-    }
-    // Validate cnpj
+    req.body.cnpj ? isValid = validateCNPJ(req.body.cnpj) : isValid = false;
+    if (!req.body.endereco) isValid = false;
 
     if (isValid) {
         next()
