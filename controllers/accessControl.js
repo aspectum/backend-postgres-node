@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt'); // should I put this in main file?
 const jwt = require('jsonwebtoken');
+const { validateEmail } =  require('../helpers/validateEmail');
 
 const saltRounds = 10;
 const secret_key = 'canIPutAnythingHere'; // ????
@@ -8,10 +9,9 @@ const secret_key = 'canIPutAnythingHere'; // ????
 const validateRequest = (type) => (req, res, next) => {
     let isValid = true;
 
-    if (!req.body.email) isValid = false;
+    isValid = validateEmail(req.body.email); // undefined returns false. THIS MUST HAPPEN FIRST!! or something like isValid = validate(email) && isValid
     if (!req.body.password) isValid = false;
-    if (type === 'register') if (!req.body.nome) isValid = false; // This way to prevent trying to access body.nome when it doesn't exist
-    // Validate email
+    if (type !== 'login') if (!req.body.nome) isValid = false; // This way to prevent trying to access body.nome when it doesn't exist
 
     if (isValid) {
         next()
