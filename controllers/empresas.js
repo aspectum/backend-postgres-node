@@ -86,7 +86,7 @@ const create = (db) => (req, res) => {
         .then(data => {
             empresa = data[0];
             console.log(empresa);
-            res.status(200).send({
+            res.status(201).send({
                 success: true,
                 data: empresa
             });

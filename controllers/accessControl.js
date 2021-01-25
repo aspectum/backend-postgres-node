@@ -74,7 +74,7 @@ const register = (db) => (req, res) => {
         .then(data => {
             user = data[0];
             console.log(user);
-            res.status(200).send({
+            res.status(201).send({
                 success: true,
                 data: user
             });

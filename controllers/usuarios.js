@@ -47,7 +47,7 @@ const create = (db) => (req, res) => {
         .then(data => {
             usuario = data[0];
             console.log(usuario);
-            res.status(200).send({
+            res.status(201).send({
                 success: true,
                 data: usuario
             });
