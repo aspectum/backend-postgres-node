@@ -1,13 +1,14 @@
 const { validateEmail } =  require('../helpers/validateEmail');
+const { validateCNPJ } =  require('../helpers/validateCNPJ');
 
 // Middleware to validate request
 const validateRequest = (req, res, next) => {
     let isValid = true;
     
     isValid = validateEmail(req.body.email); // undefined returns false. THIS MUST HAPPEN FIRST!! or something like isValid = validate(email) && isValid
+    req.body.cnpj ? isValid = validateCNPJ(req.body.cnpj) : isValid = false;
     if (!req.body.slug) isValid = false;
     if (!req.body.razao_social) isValid = false;
-    // Validate cnpj ???
 
     if (isValid) {
         next()
@@ -53,7 +54,7 @@ const validateOwner = (db) => (req, res, next) => {
 const list = (db) => (req, res) => {
     const usuario_id = req.authData.id;
 
-    db.select('id', 'slug', 'razao_social', 'email').from('empresas').where('usuario_id', '=', usuario_id)  // querying by usuario_id, so not showing it
+    db.select('id', 'slug', 'razao_social', 'email', 'cnpj').from('empresas').where('usuario_id', '=', usuario_id)  // querying by usuario_id, so not showing it
         .then(data => {
             console.log(data);
             res.status(200).send({
@@ -73,13 +74,14 @@ const list = (db) => (req, res) => {
 
 // Creates a new empresa
 const create = (db) => (req, res) => {
-    const { slug, razao_social, email } = req.body;
+    const { slug, razao_social, cnpj, email } = req.body;
     const usuario_id = req.authData.id;
 
     db.insert({
         slug,
         razao_social,
         email,
+        cnpj,
         usuario_id
     })
         .into('empresas').returning('*') // Should I return usuario_id?
@@ -104,12 +106,13 @@ const create = (db) => (req, res) => {
 // Edits empresa
 const update = (db) => (req, res) => {
     const { empresa_id } = req.params;
-    const { slug, razao_social, email } = req.body;
+    const { slug, razao_social, email, cnpj } = req.body;
 
     const updated_values = Object.assign({},    // This should filter the properties that are undefined (not on request body)
         slug && {slug},
         razao_social && {razao_social},
-        email && {email}
+        email && {email},
+        cnpj && {cnpj}
     );
 
     db.from('empresas').where('id', '=', empresa_id).update(updated_values, '*')

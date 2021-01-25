@@ -18,6 +18,7 @@ CREATE TABLE empresas(
     slug VARCHAR(255) UNIQUE NOT NULL,
     razao_social VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
+    cnpj VARCHAR(255) NOT NULL,
     usuario_id INT NOT NULL,
     PRIMARY KEY(id)
 );
