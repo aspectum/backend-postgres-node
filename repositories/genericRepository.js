@@ -1,7 +1,13 @@
 class GenericRepository {
     constructor(db, table_name) {
         this.db = db;
-        this.table_name = table_name
+        this.table_name = table_name;
+
+        this.find = this.find.bind(this);
+        this.findById = this.findById.bind(this);
+        this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
+        this.remove = this.remove.bind(this);
     }
 
     async find(criteria) {
