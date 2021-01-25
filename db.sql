@@ -32,7 +32,7 @@ CREATE TABLE sedes(
 
 CREATE TABLE tokens(
     token VARCHAR(255) UNIQUE NOT NULL,
-    usuario_id INT NOT NULL
+    usuario_id INT NOT NULL,
     PRIMARY KEY(usuario_id) -- Am I free to do this?
 );
 
