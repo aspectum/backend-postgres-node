@@ -5,6 +5,10 @@ class EmpresasRepository extends GenericRepository{
         super(db, 'empresas');
     }
 
+    async findOwnerEmpresa(owner_id, empresa_id) {
+        return super.find({ id : empresa_id, usuario_id : owner_id  })
+    }
+
     async findAllByOwnerId(id) {
         return await super.find({ 'usuario_id' : id });
     }
