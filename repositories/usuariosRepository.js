@@ -1,4 +1,4 @@
-const GenericRepository = require('./GenericRepository');
+const GenericRepository = require('./genericRepository');
 
 class UsuariosRepository extends GenericRepository{
     constructor(db) {

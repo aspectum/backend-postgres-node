@@ -1,4 +1,4 @@
-const GenericRepository = require('./GenericRepository');
+const GenericRepository = require('./genericRepository');
 
 class SedesRepository extends GenericRepository{
     constructor(db) {
