@@ -11,24 +11,24 @@ class GenericRepository {
     }
 
     async find(criteria) {
-        return await db.select('*').from(this.table_name).where(criteria);
+        return await this.db.select('*').from(this.table_name).where(criteria);
     }
 
     async findById(id) {
-        // return await db.select('*').from(this.table_name).where('id', '=', id);
+        // return await this.db.select('*').from(this.table_name).where('id', '=', id);
         return await this.find({ id });
     }
     
     async create(row) {
-        return await db.insert(row).into(this.table_name).returning('*');
+        return await this.db.insert(row).into(this.table_name).returning('*');
     }
 
     async update(values, criteria) {
-        return await db.from(this.table_name).where(criteria).update(values, '*');
+        return await this.db.from(this.table_name).where(criteria).update(values, '*');
     }
 
     async remove(criteria) {
-        return await db.from(this.table_name).where(criteria).del('*');
+        return await this.db.from(this.table_name).where(criteria).del('*');
     }
 }
 
