@@ -1,4 +1,4 @@
-class genericRepository {
+class GenericRepository {
     constructor(db, table_name) {
         this.db = db;
         this.table_name = table_name
@@ -26,4 +26,4 @@ class genericRepository {
     }
 }
 
-module.exports = genericRepository;
+module.exports = GenericRepository;

@@ -1,6 +1,6 @@
-const genericRepository = require('./genericRepository');
+const GenericRepository = require('./GenericRepository');
 
-class empresasRepository extends genericRepository{
+class EmpresasRepository extends GenericRepository{
     constructor(db) {
         super(db, 'empresas');
     }
@@ -19,4 +19,4 @@ class empresasRepository extends genericRepository{
 
 }
 
-module.exports = empresasRepository;
+module.exports = EmpresasRepository;
