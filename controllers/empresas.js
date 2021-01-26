@@ -17,10 +17,6 @@ class EmpresasController {
     // Middleware to validate request
     validateRequest(req, res, next) {
         let isValid = true;
-
-        // console.log(req);
-        // console.log(res);
-        // console.log(next);
         
         req.body.email ? isValid = validateEmail(req.body.email) : isValid = false;
         req.body.cnpj ? isValid = validateCNPJ(req.body.cnpj) : isValid = false;
