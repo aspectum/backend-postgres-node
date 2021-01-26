@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
 const TokensRepository = require('../repositories/tokensRepository');
 
-const secret_key = 'canIPutAnythingHere'; // ????
+const secret_key = 'canIPutAnythingHere'; // I think I should read this from a file or env variable
 
 class AccessController {
 
+    // Needs usuariosController for login
     constructor(db, usuariosController) {
         this.usuariosController = usuariosController;
         this.tokensRepo = new TokensRepository(db);
@@ -49,6 +50,7 @@ class AccessController {
         return jwt.sign({ id }, secret_key);
     }
 
+    // Uses UsuariosController to check credentials and handles token creation
     async login(req, res) {
         const { email, password } = req.body;
 
@@ -98,7 +100,7 @@ class AccessController {
                     success: false,
                     data: null,
                 });
-            })
+            });
 
         return res.status(200).send({
             success: true,

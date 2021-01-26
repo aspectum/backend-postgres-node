@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt'); // importing this in 2 controllers
+const bcrypt = require('bcrypt');
 const UsuariosRepository = require('../repositories/usuariosRepository');
 const { validateEmail } =  require('../helpers/validateEmail');
 
@@ -168,7 +168,7 @@ class UsuariosController {
         });
     }
 
-    // ????
+    // Prepares to call create method
     registerOwner(req, res) {
         res.params = { empresa_id: 0 };
         req.authData = { id: null };

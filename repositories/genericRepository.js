@@ -1,3 +1,4 @@
+// Base class for all repositories with basic CRUD operations
 class GenericRepository {
     constructor(db, table_name) {
         this.db = db;
@@ -15,7 +16,6 @@ class GenericRepository {
     }
 
     async findById(id) {
-        // return await this.db.select('*').from(this.table_name).where('id', '=', id);
         return await this.find({ id });
     }
     

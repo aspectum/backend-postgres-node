@@ -47,7 +47,7 @@ app.delete('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.v
 // Usuarios
 app.get('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner, usuarios.list);
 app.post('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner, usuarios.validateRequest('create'), usuarios.create);
-app.put('/usuarios/:empresa_id/:usuario_id', accessControl.validateAuth, empresas.validateOwner, usuarios.validateRequest('update'), usuarios.update); // not validating request
+app.put('/usuarios/:empresa_id/:usuario_id', accessControl.validateAuth, empresas.validateOwner, usuarios.validateRequest('update'), usuarios.update);
 app.delete('/usuarios/:empresa_id/:usuario_id', accessControl.validateAuth, empresas.validateOwner, usuarios.remove);
 
 
