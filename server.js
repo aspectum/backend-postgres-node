@@ -3,8 +3,9 @@ const knex = require('knex')
 
 const accessControl =  require('./controllers/accessControl');
 // const empresas =  require('./controllers/empresas');
-const EmpresasController =  require('./controllers/empresas');
-const sedes =  require('./controllers/sedes');
+const EmpresasController = require('./controllers/empresas');
+// const sedes =  require('./controllers/sedes');
+const SedesController = require('./controllers/sedes');
 const usuarios =  require('./controllers/usuarios');
 
 const app = express();
@@ -23,6 +24,7 @@ const db = knex({
 });
 
 const empresas = new EmpresasController(db);
+const sedes = new SedesController(db);
 
 // ENDPOINTS
 // Access control
@@ -37,10 +39,10 @@ app.put('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateOw
 app.delete('/empresas/:empresa_id', accessControl.validateAuth, empresas.validateOwner, empresas.remove);
 
 // Sedes
-app.get('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner, sedes.list(db));
-app.post('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner, sedes.validateRequest, sedes.create(db));
-app.put('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner, sedes.validateRequest, sedes.update(db));
-app.delete('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner, sedes.remove(db));
+app.get('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner, sedes.list);
+app.post('/sedes/:empresa_id', accessControl.validateAuth, empresas.validateOwner, sedes.validateRequest, sedes.create);
+app.put('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner, sedes.validateRequest, sedes.update);
+app.delete('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner, sedes.remove);
 
 // Usuarios
 app.get('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner, usuarios.list(db));
