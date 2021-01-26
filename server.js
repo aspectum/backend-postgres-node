@@ -6,7 +6,8 @@ const accessControl =  require('./controllers/accessControl');
 const EmpresasController = require('./controllers/empresas');
 // const sedes =  require('./controllers/sedes');
 const SedesController = require('./controllers/sedes');
-const usuarios =  require('./controllers/usuarios');
+// const usuarios =  require('./controllers/usuarios');
+const UsuariosController = require('./controllers/usuarios');
 
 const app = express();
 const port = 3000;
@@ -25,11 +26,12 @@ const db = knex({
 
 const empresas = new EmpresasController(db);
 const sedes = new SedesController(db);
+const usuarios = new UsuariosController(db);
 
 // ENDPOINTS
 // Access control
-app.post('/registro', accessControl.validateRequest('register'), accessControl.register(db));
-app.post('/login', accessControl.validateRequest('login'), accessControl.login(db));
+app.post('/registro', usuarios.validateRequest('register'), accessControl.register(db));
+app.post('/login', usuarios.validateRequest('login'), accessControl.login(db));
 app.post('/logout', accessControl.validateAuth, accessControl.logout(db));
 
 // Empresas
@@ -45,10 +47,10 @@ app.put('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.vali
 app.delete('/sedes/:empresa_id/:sede_id', accessControl.validateAuth, empresas.validateOwner, sedes.remove);
 
 // Usuarios
-app.get('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner, usuarios.list(db));
-app.post('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner, accessControl.validateRequest('create'), usuarios.create(db)); // Using accessControl.validateRequest (?)
-app.put('/usuarios/:empresa_id/:usuario_id', accessControl.validateAuth, empresas.validateOwner, accessControl.validateRequest('update'), usuarios.update(db)); // not validating request
-app.delete('/usuarios/:empresa_id/:usuario_id', accessControl.validateAuth, empresas.validateOwner, usuarios.remove(db));
+app.get('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner, usuarios.list);
+app.post('/usuarios/:empresa_id', accessControl.validateAuth, empresas.validateOwner, usuarios.validateRequest('create'), usuarios.create);
+app.put('/usuarios/:empresa_id/:usuario_id', accessControl.validateAuth, empresas.validateOwner, usuarios.validateRequest('update'), usuarios.update); // not validating request
+app.delete('/usuarios/:empresa_id/:usuario_id', accessControl.validateAuth, empresas.validateOwner, usuarios.remove);
 
 
 app.listen(port, () => {

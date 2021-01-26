@@ -1,132 +1,190 @@
 const bcrypt = require('bcrypt'); // importing this in 2 controllers
+const UsuariosRepository = require('../repositories/usuariosRepository');
+const { validateEmail } =  require('../helpers/validateEmail');
 
 const saltRounds = 10;
-const allMinusPassword = ['id', 'nome', 'email', 'empresa_id', 'usuario_id'];
 
-// Lists all usuarios from empresa (not listing owner)
-const list = (db) => (req, res) => {
-    const { empresa_id } = req.params;
+class UsuariosController {
 
-    db.select(allMinusPassword).from('usuarios').where({ empresa_id })
-        .then(data => {
-            console.log(data);
-            res.status(200).send({
-                success: true,
-                data
+    constructor(db) {
+        this.usuariosRepo = new UsuariosRepository(db);
+
+        this.list = this.list.bind(this);
+        this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
+        this.remove = this.remove.bind(this);
+    }
+
+    // How do I make this private?
+    _removePassword(objs) {
+        const filtered = objs.map(({ password, ...obj }) => obj);
+        return filtered;
+    }
+
+    // Middleware to validate request
+    validateRequest(type) {
+        return (req, res, next) => {
+            let isValid = true;
+
+            isValid = validateEmail(req.body.email); // undefined returns false. THIS MUST HAPPEN FIRST!! or something like isValid = validate(email) && isValid
+            if (!req.body.password) isValid = false;
+            if (type !== 'login') if (!req.body.nome) isValid = false; // This way to prevent trying to access body.nome when it doesn't exist
+
+            if (isValid) {
+                next()
+            }
+            else {
+                console.log('ERROR: body incomplete')
+                return res.status(400).send({
+                    success: false,
+                    data: null
+                });
+            }
+        }
+    }
+
+    // validateRequest = (type) => (req, res, next) => {
+    //     let isValid = true;
+
+    //     isValid = validateEmail(req.body.email); // undefined returns false. THIS MUST HAPPEN FIRST!! or something like isValid = validate(email) && isValid
+    //     if (!req.body.password) isValid = false;
+    //     if (type !== 'login') if (!req.body.nome) isValid = false; // This way to prevent trying to access body.nome when it doesn't exist
+
+    //     if (isValid) {
+    //         next()
+    //     }
+    //     else {
+    //         console.log('ERROR: body incomplete')
+    //         return res.status(400).send({
+    //             success: false,
+    //             data: null
+    //         });
+    //     }
+    // }
+
+    // Lists all usuarios from empresa (not listing owner)
+    async list(req, res) {
+        const { empresa_id } = req.params;
+
+        const users = await this.usuariosRepo.findAllByEmpresaId(empresa_id)
+            .catch(err => {
+                console.log(err);
+                return res.status(400).send({
+                    success: false,
+                    data: null
+                });
             });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(400).send({
-                success: false,
-                data: null,
+
+        const data = this._removePassword(users);
+
+        return res.status(200).send({
+            success: true,
+            data
+        });
+    }
+    
+    
+    // Creates a new usuario
+    async create(req, res) {
+        const { nome, email, password } = req.body;
+        const { empresa_id } = req.params;
+        const usuario_id = req.authData.id;
+    
+        const hash = bcrypt.hashSync(password, saltRounds);
+
+        const user = {
+            nome,
+            email,
+            password: hash,
+            empresa_id,
+            usuario_id
+        };
+
+        const users = await this.usuariosRepo.create(user)
+            .catch(err => {
+                console.log(err); // probably violating unique email
+                return res.status(409).send({
+                    success: false,
+                    data: null
+                });
             });
-        })
-}
 
+        const data = this._removePassword(users);
 
-// Creates a new usuario
-// Maybe it would be better to put this in accessControl,
-// then I wouldn't need to import bcrypt twice. Also, this
-// is very similar to accessControl.register...
-const create = (db) => (req, res) => {
-    const { nome, email, password } = req.body;
-    const { empresa_id } = req.params;
-    const usuario_id = req.authData.id;
+        return res.status(201).send({
+            success: true,
+            data
+        });
+    }
+    
+    
+    // Edits usuario
+    async update(req, res) {
+        const { nome, email, password } = req.body;
+        const { empresa_id, usuario_id } = req.params;
+    
+        const hash = bcrypt.hashSync(password, saltRounds);
+    
+        const updated_values = { 
+            nome,
+            email,
+            password: hash,
+        };
 
-    const hash = bcrypt.hashSync(password, saltRounds);
-
-    db.insert({
-        nome,
-        email,
-        password: hash,
-        empresa_id,
-        usuario_id
-    })
-        .into('usuarios').returning(allMinusPassword)
-        .then(data => {
-            usuario = data[0];
-            console.log(usuario);
-            res.status(201).send({
-                success: true,
-                data: usuario
+        const users = await this.usuariosRepo.update(empresa_id, usuario_id, updated_values)
+            .catch(err => {
+                console.log(err); // probably violating unique email
+                return res.status(409).send({
+                    success: false,
+                    data: null
+                });
             });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(400).send({
-                success: false,
-                data: null
-            });
-        })
-}
 
-
-// Edits usuario
-const update = (db) => (req, res) => {
-    const { nome, email, password } = req.body;
-    const { empresa_id, usuario_id } = req.params;
-
-    let hash;
-    if (password) hash = bcrypt.hashSync(password, saltRounds);
-
-    const updated_values = Object.assign({},    // This should filter the properties that are undefined (not on request body)
-        nome && {nome},
-        email && {email},
-        hash && {password: hash},
-    );
-
-    db.from('usuarios').where({ id: usuario_id, empresa_id }).update(updated_values, allMinusPassword)
-        .then(data => {
-            usuario = data[0];
-
-            if (!usuario) throw { msg:`ERROR: Usuario doesn't exist or does not belong to this Empresa`, code: 400 };
-
-            console.log('UPDATED ', usuario);
-            return res.status(200).send({
-                success: true,
-                data: usuario
-            });
-        })
-        .catch(err => {
-            console.log(err);
-
+        if (!users[0]) {
+            console.log(`ERROR: this Usuario does not belong to this Empresa`);
             return res.status(400).send({
                 success: false,
                 data: null
             });
+        }
+
+        const data = this._removePassword(users);
+
+        return res.status(200).send({
+            success: true,
+            data
         });
-}
+    }
+    
+    // Deletes usuario
+    async remove(req, res) {
+        const { empresa_id, usuario_id } = req.params;
 
-// Deletes usuario
-const remove = (db) => (req, res) => {
-    const { empresa_id, usuario_id } = req.params;
-
-    db.from('usuarios').where({ id: usuario_id, empresa_id }).del(allMinusPassword)
-        .then(data => {
-            usuario = data[0];
-
-            if (!usuario) throw { msg:`ERROR: Usuario doesn't exist or does not belong to this Empresa`, code: 400 };
-
-            console.log('DELETED ', usuario);
-            return res.status(200).send({
-                success: true,
-                data: usuario
+        const users = await this.usuariosRepo.remove(empresa_id, usuario_id)
+            .catch(err => {
+                console.log(err);
+                return res.status(400).send({
+                    success: false,
+                    data: null
+                });
             });
-        })
-        .catch(err => {
-            console.log(err);
 
+        if (!users[0]) {
+            console.log(`ERROR: this Usuario does not belong to this Empresa`);
             return res.status(400).send({
                 success: false,
                 data: null
             });
+        }
+
+        const data = this._removePassword(users);
+
+        return res.status(200).send({
+            success: true,
+            data
         });
+    }
 }
 
-module.exports = {
-    list,
-    create,
-    update,
-    remove
-}
+
+module.exports = UsuariosController;
