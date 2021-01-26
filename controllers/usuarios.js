@@ -87,8 +87,14 @@ class UsuariosController {
     // Creates a new usuario
     async create(req, res) {
         const { nome, email, password } = req.body;
-        const { empresa_id } = req.params;
-        const usuario_id = req.authData.id;
+        let { empresa_id } = req.params;
+        if (empresa_id) {   // If owner is creating new usuario
+            const usuario_id = req.authData.id;
+        }
+        else {  // If registering new owner
+            empresa_id = 0;
+            const usuario_id = null;
+        }
     
         const hash = bcrypt.hashSync(password, saltRounds);
 
