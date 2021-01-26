@@ -40,8 +40,6 @@ class EmpresasController {
     async validateOwner(req, res, next) {
         const { empresa_id } = req.params;
         const logged_user_id = req.authData.id;
-
-        console.log(this.empresasRepo)
     
         const data = await this.empresasRepo.findOwnerEmpresa(logged_user_id, empresa_id);
 
@@ -117,8 +115,6 @@ class EmpresasController {
             email,
             cnpj,
         };
-    
-
 
         const data = await this.empresasRepo.update(updated_values, empresa_id)
             .catch(err => {
@@ -140,7 +136,14 @@ class EmpresasController {
     async remove(req, res) {
         const { empresa_id } = req.params;
 
-        const data = await this.empresasRepo.remove(empresa_id);
+        const data = await this.empresasRepo.remove(empresa_id)
+            .catch(err => {
+                console.log(err);
+                return res.status(400).send({
+                    success: false,
+                    data: null
+                });
+            });
 
         return res.status(200).send({
             success: true,
