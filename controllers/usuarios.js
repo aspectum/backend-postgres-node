@@ -43,25 +43,6 @@ class UsuariosController {
         }
     }
 
-    // validateRequest = (type) => (req, res, next) => {
-    //     let isValid = true;
-
-    //     isValid = validateEmail(req.body.email); // undefined returns false. THIS MUST HAPPEN FIRST!! or something like isValid = validate(email) && isValid
-    //     if (!req.body.password) isValid = false;
-    //     if (type !== 'login') if (!req.body.nome) isValid = false; // This way to prevent trying to access body.nome when it doesn't exist
-
-    //     if (isValid) {
-    //         next()
-    //     }
-    //     else {
-    //         console.log('ERROR: body incomplete')
-    //         return res.status(400).send({
-    //             success: false,
-    //             data: null
-    //         });
-    //     }
-    // }
-
     // Lists all usuarios from empresa (not listing owner)
     async list(req, res) {
         const { empresa_id } = req.params;
