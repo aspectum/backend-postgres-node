@@ -178,7 +178,11 @@ class UsuariosController {
 
     // Check if (email, password) combination exists in DB
     async loginHandler(email, password) {
-        const data = await this.usuariosRepo.findByEmail(email);
+        const data = await this.usuariosRepo.findByEmail(email)
+            .catch(err => {
+                console.log(err);
+                return(false);
+            })
 
         if (!data[0]) {
             return false;
