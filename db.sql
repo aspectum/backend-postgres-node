@@ -43,9 +43,9 @@ INSERT INTO usuarios(id, nome, email, password)
     OVERRIDING SYSTEM VALUE
     VALUES(0, 'dummy', 'dummy', 'dummy');
 
-INSERT INTO empresas(id, slug, razao_social, email, usuario_id)
+INSERT INTO empresas(id, slug, razao_social, email, cnpj, usuario_id)
     OVERRIDING SYSTEM VALUE
-    VALUES(0, 'dummy', 'dummy', 'dummy', 0);
+    VALUES(0, 'dummy', 'dummy', 'dummy', 'cnpj', 0);
 
 ALTER TABLE usuarios
     ADD CONSTRAINT fk_usuario_empresa

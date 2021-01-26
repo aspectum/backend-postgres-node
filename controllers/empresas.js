@@ -1,171 +1,156 @@
+const EmpresasRepository = require('../repositories/empresasRepository');
 const { validateEmail } =  require('../helpers/validateEmail');
 const { validateCNPJ } =  require('../helpers/validateCNPJ');
 
-// Middleware to validate request
-const validateRequest = (req, res, next) => {
-    let isValid = true;
+class EmpresasController {
+
+    constructor(db) {
+        this.empresasRepo = new EmpresasRepository(db);
+
+        this.validateOwner = this.validateOwner.bind(this);
+        this.list = this.list.bind(this);
+        this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
+        this.remove = this.remove.bind(this);
+    }
+
+    // Middleware to validate request
+    validateRequest(req, res, next) {
+        let isValid = true;
+        
+        req.body.email ? isValid = validateEmail(req.body.email) : isValid = false;
+        req.body.cnpj ? isValid = validateCNPJ(req.body.cnpj) : isValid = false;
+        if (!req.body.slug) isValid = false;
+        if (!req.body.razao_social) isValid = false;
     
-    isValid = validateEmail(req.body.email); // undefined returns false. THIS MUST HAPPEN FIRST!! or something like isValid = validate(email) && isValid
-    req.body.cnpj ? isValid = validateCNPJ(req.body.cnpj) : isValid = false;
-    if (!req.body.slug) isValid = false;
-    if (!req.body.razao_social) isValid = false;
-
-    if (isValid) {
-        next()
-    }
-    else {
-        console.log('ERROR: body incomplete')
-        return res.status(400).send({
-            success: false,
-            data: null
-        });
-    }
-}
-
-
-// Middleware to validate if logged_user owns requested empresa
-const validateOwner = (db) => (req, res, next) => {
-    const { empresa_id } = req.params;
-    const logged_user_id = req.authData.id;
-
-    db.select('usuario_id').from('empresas').where('id', '=', empresa_id)
-        .then(data => {
-
-            if (!data[0]) throw { msg:`ERROR: Empresa doesn't exist`, code: 404 };
-            if (data[0].usuario_id !== logged_user_id) throw { msg:`ERROR: Unauthorized user ${logged_user_id}`, code: 403 };
-
-            next();
-        })
-        .catch(err => {
-            console.log(err);
-
-            let code = err.code;
-            if (!code) code = 400;
-
-            return res.status(code).send({
-                success: false,
-                data: null
-            });
-        });
-}
-
-
-// Lists all empresas from logged user
-const list = (db) => (req, res) => {
-    const usuario_id = req.authData.id;
-
-    db.select('id', 'slug', 'razao_social', 'email', 'cnpj').from('empresas').where('usuario_id', '=', usuario_id)  // querying by usuario_id, so not showing it
-        .then(data => {
-            console.log(data);
-            res.status(200).send({
-                success: true,
-                data
-            });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(200).send({
-                success: false,
-                data: null,
-            });
-        })
-}
-
-
-// Creates a new empresa
-const create = (db) => (req, res) => {
-    const { slug, razao_social, cnpj, email } = req.body;
-    const usuario_id = req.authData.id;
-
-    db.insert({
-        slug,
-        razao_social,
-        email,
-        cnpj,
-        usuario_id
-    })
-        .into('empresas').returning('*') // Should I return usuario_id?
-        .then(data => {
-            empresa = data[0];
-            console.log(empresa);
-            res.status(201).send({
-                success: true,
-                data: empresa
-            });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(400).send({
-                success: false,
-                data: null
-            });
-        })
-}
-
-
-// Edits empresa
-const update = (db) => (req, res) => {
-    const { empresa_id } = req.params;
-    const { slug, razao_social, email, cnpj } = req.body;
-
-    const updated_values = Object.assign({},    // This should filter the properties that are undefined (not on request body)
-        slug && {slug},
-        razao_social && {razao_social},
-        email && {email},
-        cnpj && {cnpj}
-    );
-
-    db.from('empresas').where('id', '=', empresa_id).update(updated_values, '*')
-        .then(data => {
-            empresa = data[0];
-
-            console.log('UPDATED ', empresa);
-            return res.status(200).send({
-                success: true,
-                data: empresa
-            });
-        })
-        .catch(err => {
-            console.log(err);
-
+        if (isValid) {
+            next()
+        }
+        else {
+            console.log('ERROR: body incomplete')
             return res.status(400).send({
                 success: false,
                 data: null
             });
-        });
-}
+        }
+    }
+    
+    
+    // Middleware to validate if logged_user owns requested empresa
+    async validateOwner(req, res, next) {
+        const { empresa_id } = req.params;
+        const logged_user_id = req.authData.id;
+    
+        const data = await this.empresasRepo.findOwnerEmpresa(logged_user_id, empresa_id);
 
-
-// Deletes empresa
-const remove = (db) => (req, res) => {
-    const { empresa_id } = req.params;
-
-    db.from('empresas').where('id', '=', empresa_id).del('*')
-        .then(data => {
-            empresa = data[0];
-
-            console.log('DELETED ', empresa);
-            return res.status(200).send({
-                success: true,
-                data: empresa
-            });
-        })
-        .catch(err => {
-            console.log(err);
-
+        if (!data[0]) {
+            console.log(`ERROR: Empresa doesn't exist or does not belong to this User`)
             return res.status(400).send({
                 success: false,
                 data: null
             });
+        }
+
+        next();
+    }
+    
+    
+    // Lists all empresas from logged user
+    async list(req, res) {
+        const usuario_id = req.authData.id;
+
+        const data = await this.empresasRepo.findAllByOwnerId(usuario_id)
+            .catch(err => {
+                console.log(err);
+                return res.status(400).send({
+                    success: false,
+                    data: null
+                });
+            });
+
+        return res.status(200).send({
+            success: true,
+            data
         });
+    }
+    
+    
+    // Creates a new empresa
+    async create(req, res) {
+        const { slug, razao_social, cnpj, email } = req.body;
+        const usuario_id = req.authData.id;
+
+        const empresa = {
+            slug,
+            razao_social,
+            email,
+            cnpj,
+            usuario_id
+        };
+    
+        const data = await this.empresasRepo.create(empresa)
+            .catch(err => {
+                console.log(err); // probably violating unique email
+                return res.status(409).send({
+                    success: false,
+                    data: null
+                });
+            });
+
+        return res.status(201).send({
+            success: true,
+            data
+        });
+    }
+    
+    
+    // Edits empresa
+    async update(req, res) {
+        const { empresa_id } = req.params;
+        const { slug, razao_social, email, cnpj } = req.body;
+    
+        const updated_values = {
+            slug,
+            razao_social,
+            email,
+            cnpj,
+        };
+
+        const data = await this.empresasRepo.update(updated_values, empresa_id)
+            .catch(err => {
+                console.log(err); // probably violating unique email
+                return res.status(409).send({
+                    success: false,
+                    data: null
+                });
+            });
+
+        return res.status(200).send({
+            success: true,
+            data
+        });
+    }
+    
+    
+    // Deletes empresa
+    async remove(req, res) {
+        const { empresa_id } = req.params;
+
+        const data = await this.empresasRepo.remove(empresa_id)
+            .catch(err => {
+                console.log(err);
+                return res.status(400).send({
+                    success: false,
+                    data: null
+                });
+            });
+
+        return res.status(200).send({
+            success: true,
+            data
+        });
+    }
 }
 
 
-module.exports = {
-    validateRequest,
-    validateOwner,
-    list,
-    create,
-    update,
-    remove
-}
+module.exports = EmpresasController;
