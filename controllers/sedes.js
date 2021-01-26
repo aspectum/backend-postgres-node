@@ -99,6 +99,14 @@ class SedesController {
                 });
             });
 
+        if (!data[0]) {
+            console.log(`ERROR: this Sede does not belong to this Empresa`);
+            return res.status(400).send({
+                success: false,
+                data: null
+            });
+        }
+
         return res.status(200).send({
             success: true,
             data
@@ -118,6 +126,14 @@ class SedesController {
                     data: null
                 });
             });
+
+        if (!data[0]) {
+            console.log(`ERROR: this Sede does not belong to this Empresa`);
+            return res.status(400).send({
+                success: false,
+                data: null
+            });
+        }
 
         return res.status(200).send({
             success: true,
