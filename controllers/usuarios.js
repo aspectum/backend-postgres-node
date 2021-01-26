@@ -170,8 +170,8 @@ class UsuariosController {
 
     // ????
     registerOwner(req, res) {
-        res.params.empresa_id = 0;
-        req.authData.id = null;
+        res.params = { empresa_id: 0 };
+        req.authData = { id: null };
 
         return this.create(req, res);
     }
