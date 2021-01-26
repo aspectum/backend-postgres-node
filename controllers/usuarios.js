@@ -13,6 +13,8 @@ class UsuariosController {
         this.create = this.create.bind(this);
         this.update = this.update.bind(this);
         this.remove = this.remove.bind(this);
+        this.registerOwner = this.registerOwner.bind(this);
+        this.loginHandler = this.loginHandler.bind(this);
     }
 
     // How do I make this private?
@@ -68,15 +70,9 @@ class UsuariosController {
     // Creates a new usuario
     async create(req, res) {
         const { nome, email, password } = req.body;
-        let { empresa_id } = req.params;
-        if (empresa_id) {   // If owner is creating new usuario
-            const usuario_id = req.authData.id;
-        }
-        else {  // If registering new owner
-            empresa_id = 0;
-            const usuario_id = null;
-        }
-    
+        const { empresa_id } = req.params;
+        const usuario_id = req.authData.id;
+
         const hash = bcrypt.hashSync(password, saltRounds);
 
         const user = {
@@ -170,6 +166,27 @@ class UsuariosController {
             success: true,
             data
         });
+    }
+
+    // ????
+    registerOwner(req, res) {
+        res.params.empresa_id = 0;
+        req.authData.id = null;
+
+        return this.create(req, res);
+    }
+
+    // Check if (email, password) combination exists in DB
+    async loginHandler(email, password) {
+        const data = await this.usuariosRepo.findByEmail(email);
+
+        if (!data[0]) {
+            return false;
+        }
+        else {
+            const isValid = bcrypt.compareSync(password, data[0].password);
+            return isValid;
+        }
     }
 }
 
