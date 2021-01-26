@@ -181,7 +181,7 @@ class UsuariosController {
         const data = await this.usuariosRepo.findByEmail(email)
             .catch(err => {
                 console.log(err);
-                return(false);
+                return false;
             })
 
         if (!data[0]) {
@@ -189,7 +189,12 @@ class UsuariosController {
         }
         else {
             const isValid = bcrypt.compareSync(password, data[0].password);
-            return isValid;
+            if (isValid) {
+                return data[0].id;
+            }
+            else {
+                return false;
+            }
         }
     }
 }
