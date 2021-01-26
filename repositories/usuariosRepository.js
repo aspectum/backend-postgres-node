@@ -9,6 +9,10 @@ class UsuariosRepository extends GenericRepository{
         return await super.find({ 'empresa_id' : id });
     }
 
+    async findByEmail(email) {
+        return await super.find({ email });
+    }
+
     async update(empresa_id, usuario_id, values) {
         return super.update(values, { id: usuario_id, empresa_id });
     }
