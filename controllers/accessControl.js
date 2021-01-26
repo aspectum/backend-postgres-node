@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const TokensRepository = require('../repositories/tokensRepository');
+const responses = require('../helpers/responses');
 
 const secret_key = 'canIPutAnythingHere'; // I think I should read this from a file or env variable
 
@@ -20,28 +21,20 @@ class AccessController {
         const { authorization } = req.headers;
     
         if (!authorization) {
-            console.log('ERROR: no authorization header')
-            return res.status(401).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, 'ERROR: no authorization header', null, 401);
         }
     
         const token = authorization.split(' ')[1];
     
         jwt.verify(token, secret_key, (err, data) => {
             if (err) {
-                console.log(err)
-                return res.status(403).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err, null, 403);
             }
             req.authData = {
                 token,
                 id: data.id
             };
-            next();
+            return next();
         });
     }
     
@@ -66,25 +59,17 @@ class AccessController {
 
             const data = await this.tokensRepo.create(entry)
                 .catch(err => {
-                    console.log(err);
-                    return res.status(400).send({
-                        success: false,
-                        data: null
-                    });
+                    return responses.failure(res, err);
                 });
 
-            return res.status(200).send({
+            return res.status(200).send({   // can't use responses.success because of formar (token outside of data)
                 success: true,
                 data: null,
                 token: data[0].token
             });
         }
         else {
-            console.log('ERROR: wrong credentials')
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, 'ERROR: wrong credentials');
         }
     
     } 
@@ -95,17 +80,10 @@ class AccessController {
 
         const data = await this.tokensRepo.remove(token)
             .catch(err => {
-                console.log(err);
-                return res.status(400).send({
-                    success: false,
-                    data: null,
-                });
+                return responses.failure(res, err);
             });
 
-        return res.status(200).send({
-            success: true,
-            data: null,
-        });
+        return responses.success(res, `Logged out user ${JSON.stringify(data)}`);
     }
 }
 

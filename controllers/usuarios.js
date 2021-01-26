@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const UsuariosRepository = require('../repositories/usuariosRepository');
+const responses = require('../helpers/responses');
 const { validateEmail } =  require('../helpers/validateEmail');
 
 const saltRounds = 10;
@@ -36,11 +37,7 @@ class UsuariosController {
                 next()
             }
             else {
-                console.log('ERROR: body incomplete')
-                return res.status(400).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, `ERROR: body invalid`);
             }
         }
     }
@@ -51,19 +48,12 @@ class UsuariosController {
 
         const users = await this.usuariosRepo.findAllByEmpresaId(empresa_id)
             .catch(err => {
-                console.log(err);
-                return res.status(400).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
         const data = this._removePassword(users);
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Listed usuarios from empresa ${empresa_id}`, data);
     }
     
     
@@ -85,19 +75,12 @@ class UsuariosController {
 
         const users = await this.usuariosRepo.create(user)
             .catch(err => {
-                console.log(err); // probably violating unique email
-                return res.status(409).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err, null, 409); // probably violating unique email
             });
 
         const data = this._removePassword(users);
 
-        return res.status(201).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Created new usuario ${JSON.stringify(data)}`, data, 201);
     }
     
     
@@ -116,27 +99,16 @@ class UsuariosController {
 
         const users = await this.usuariosRepo.update(empresa_id, usuario_id, updated_values)
             .catch(err => {
-                console.log(err); // probably violating unique email
-                return res.status(409).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err, null, 409); // probably violating unique email
             });
 
         if (!users[0]) {
-            console.log(`ERROR: this Usuario does not belong to this Empresa`);
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, `ERROR: this Usuario does not belong to this Empresa`);
         }
 
         const data = this._removePassword(users);
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Edited usuario ${JSON.stringify(data)}`, data);
     }
     
     // Deletes usuario
@@ -145,27 +117,16 @@ class UsuariosController {
 
         const users = await this.usuariosRepo.remove(empresa_id, usuario_id)
             .catch(err => {
-                console.log(err);
-                return res.status(400).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
         if (!users[0]) {
-            console.log(`ERROR: this Usuario does not belong to this Empresa`);
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, `ERROR: this Usuario does not belong to this Empresa`);
         }
 
         const data = this._removePassword(users);
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Deleted usuario ${JSON.stringify(data)}`, data);
     }
 
     // Prepares to call create method

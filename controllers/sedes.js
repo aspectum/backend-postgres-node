@@ -1,4 +1,5 @@
 const SedesRepository = require('../repositories/sedesRepository');
+const responses = require('../helpers/responses');
 const { validateCNPJ } =  require('../helpers/validateCNPJ');
 
 class SedesController {
@@ -20,14 +21,10 @@ class SedesController {
         if (!req.body.endereco) isValid = false;
     
         if (isValid) {
-            next()
+            return next()
         }
         else {
-            console.log('ERROR: body incomplete')
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, 'ERROR: body invalid');
         }
     }
     
@@ -37,17 +34,10 @@ class SedesController {
 
         const data = await this.sedesRepo.findAllByEmpresaId(empresa_id)
             .catch(err => {
-                console.log(err);
-                return res.status(400).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Listed sedes from empresa ${empresa_id}`, data);
     }
     
     
@@ -66,17 +56,10 @@ class SedesController {
 
         const data = await this.sedesRepo.create(sede)
             .catch(err => {
-                console.log(err); // probably violating unique email
-                return res.status(409).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
-        return res.status(201).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Created new sede ${JSON.stringify(data)}`, data, 201);
     }
     
     
@@ -92,25 +75,14 @@ class SedesController {
 
         const data = await this.sedesRepo.update(empresa_id, sede_id, updated_values)
             .catch(err => {
-                console.log(err); // probably violating unique email
-                return res.status(409).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
         if (!data[0]) {
-            console.log(`ERROR: this Sede does not belong to this Empresa`);
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, `ERROR: this Sede does not belong to this Empresa`);
         }
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Updated sede ${JSON.stringify(data)}`, data);
     }
     
     
@@ -120,25 +92,14 @@ class SedesController {
 
         const data = await this.sedesRepo.remove(empresa_id, sede_id)
             .catch(err => {
-                console.log(err);
-                return res.status(400).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
         if (!data[0]) {
-            console.log(`ERROR: this Sede does not belong to this Empresa`);
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, `ERROR: this Sede does not belong to this Empresa`);
         }
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Deleted sede ${JSON.stringify(data)}`, data);
     }
 }
 

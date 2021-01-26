@@ -1,4 +1,5 @@
 const EmpresasRepository = require('../repositories/empresasRepository');
+const responses = require('../helpers/responses');
 const { validateEmail } =  require('../helpers/validateEmail');
 const { validateCNPJ } =  require('../helpers/validateCNPJ');
 
@@ -27,11 +28,7 @@ class EmpresasController {
             next()
         }
         else {
-            console.log('ERROR: body incomplete')
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, 'ERROR: body invalid');
         }
     }
     
@@ -44,11 +41,7 @@ class EmpresasController {
         const data = await this.empresasRepo.findOwnerEmpresa(logged_user_id, empresa_id);
 
         if (!data[0]) {
-            console.log(`ERROR: Empresa doesn't exist or does not belong to this User`)
-            return res.status(400).send({
-                success: false,
-                data: null
-            });
+            return responses.failure(res, `ERROR: Empresa doesn't exist or does not belong to this User`);
         }
 
         next();
@@ -61,17 +54,10 @@ class EmpresasController {
 
         const data = await this.empresasRepo.findAllByOwnerId(usuario_id)
             .catch(err => {
-                console.log(err);
-                return res.status(400).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Listed empresas from user ${usuario_id}`, data);
     }
     
     
@@ -90,17 +76,10 @@ class EmpresasController {
     
         const data = await this.empresasRepo.create(empresa)
             .catch(err => {
-                console.log(err); // probably violating unique email
-                return res.status(409).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err, null, 409); // probably violating unique email
             });
 
-        return res.status(201).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Created new empresa ${JSON.stringify(data)}`, data, 201);
     }
     
     
@@ -118,17 +97,10 @@ class EmpresasController {
 
         const data = await this.empresasRepo.update(updated_values, empresa_id)
             .catch(err => {
-                console.log(err); // probably violating unique email
-                return res.status(409).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err, null, 409); // probably violating unique email
             });
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Edited empresa ${JSON.stringify(data)}`, data);
     }
     
     
@@ -138,17 +110,10 @@ class EmpresasController {
 
         const data = await this.empresasRepo.remove(empresa_id)
             .catch(err => {
-                console.log(err);
-                return res.status(400).send({
-                    success: false,
-                    data: null
-                });
+                return responses.failure(res, err);
             });
 
-        return res.status(200).send({
-            success: true,
-            data
-        });
+        return responses.success(res, `Deleted empresa ${JSON.stringify(data)}`, data);
     }
 }
 
