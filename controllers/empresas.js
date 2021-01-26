@@ -62,9 +62,15 @@ class EmpresasController {
         const usuario_id = req.authData.id;
 
         const data = await this.empresasRepo.findAllByOwnerId(usuario_id)
-            .catch (err => console.log('CAUGHT:              ', err))
+            .catch(err => {
+                console.log(err);
+                return res.status(400).send({
+                    success: false,
+                    data: null
+                });
+            });
 
-        res.status(200).send({
+        return res.status(200).send({
             success: true,
             data
         });
